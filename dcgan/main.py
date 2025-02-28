@@ -12,6 +12,9 @@ import torchvision.datasets as dset
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
 
+import sys, tinygrad, torch, pathlib
+sys.path.append(pathlib.Path(tinygrad.__file__).parent.parent)
+import extra.torch_backend.backend
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', required=True, help='cifar10 | lsun | mnist |imagenet | folder | lfw | fake')
@@ -56,7 +59,7 @@ if torch.cuda.is_available() and not opt.cuda:
 
 if torch.backends.mps.is_available() and not opt.mps:
     print("WARNING: You have mps device, to enable macOS GPU run with --mps")
-  
+
 if opt.dataroot is None and str(opt.dataset).lower() != 'fake':
     raise ValueError("`dataroot` parameter is required for dataset \"%s\"" % opt.dataset)
 
@@ -113,6 +116,8 @@ elif use_mps:
     device = torch.device("mps")
 else:
     device = torch.device("cpu")
+
+device = torch.device("tiny")
 
 ngpu = int(opt.ngpu)
 nz = int(opt.nz)

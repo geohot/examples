@@ -12,6 +12,10 @@ from torchvision import datasets
 from torchvision import transforms
 import torch.onnx
 
+import sys, tinygrad, torch, pathlib
+sys.path.append(pathlib.Path(tinygrad.__file__).parent.parent)
+import extra.torch_backend.backend
+
 import utils
 from transformer_net import TransformerNet
 from vgg import Vgg16
@@ -35,6 +39,7 @@ def train(args):
         device = torch.device("mps")
     else:
         device = torch.device("cpu")
+    device = torch.device("tiny")
 
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -126,6 +131,7 @@ def train(args):
 
 def stylize(args):
     device = torch.device("cuda" if args.cuda else "cpu")
+    device = torch.device("tiny")
 
     content_image = utils.load_image(args.content_image, scale=args.content_scale)
     content_transform = transforms.Compose([
@@ -152,7 +158,7 @@ def stylize(args):
                 assert args.export_onnx.endswith(".onnx"), "Export model file should end with .onnx"
                 output = torch.onnx._export(
                     style_model, content_image, args.export_onnx, opset_version=11,
-                ).cpu()            
+                ).cpu()
             else:
                 output = style_model(content_image).cpu()
     utils.save_image(args.output_image, output[0])

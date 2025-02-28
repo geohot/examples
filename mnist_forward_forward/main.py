@@ -10,6 +10,9 @@ from torchvision.transforms import Compose, ToTensor, Normalize, Lambda
 from torch.utils.data import DataLoader
 from torch.optim import Adam
 
+import sys, tinygrad, torch, pathlib
+sys.path.append(pathlib.Path(tinygrad.__file__).parent.parent)
+import extra.torch_backend.backend
 
 def get_y_neg(y):
     y_neg = y.clone()
@@ -145,6 +148,7 @@ if __name__ == "__main__":
         device = torch.device("mps")
     else:
         device = torch.device("cpu")
+    device = torch.device("tiny")
 
     train_kwargs = {"batch_size": args.train_size}
     test_kwargs = {"batch_size": args.test_size}
