@@ -6,6 +6,9 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
 
+import sys, tinygrad, torch, pathlib
+sys.path.append(pathlib.Path(tinygrad.__file__).parent.parent)
+import extra.torch_backend.backend
 
 class Net(nn.Module):
     def __init__(self):
@@ -106,6 +109,8 @@ def main():
         device = torch.device("mps")
     else:
         device = torch.device("cpu")
+
+    device = torch.device("tiny")
 
     train_kwargs = {'batch_size': args.batch_size}
     test_kwargs = {'batch_size': args.test_batch_size}

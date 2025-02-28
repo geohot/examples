@@ -6,6 +6,10 @@ import time
 import warnings
 from enum import Enum
 
+import sys, tinygrad, torch, pathlib
+sys.path.append(pathlib.Path(tinygrad.__file__).parent.parent)
+import extra.torch_backend.backend
+
 import torch
 import torch.backends.cudnn as cudnn
 import torch.distributed as dist
@@ -172,7 +176,7 @@ def main_worker(gpu, ngpus_per_node, args):
         torch.cuda.set_device(args.gpu)
         model = model.cuda(args.gpu)
     elif torch.backends.mps.is_available():
-        device = torch.device("mps")
+        device = torch.device("tiny")
         model = model.to(device)
     else:
         # DataParallel will divide and allocate batch_size to all available GPUs
@@ -188,7 +192,7 @@ def main_worker(gpu, ngpus_per_node, args):
         else:
             device = torch.device("cuda")
     elif torch.backends.mps.is_available():
-        device = torch.device("mps")
+        device = torch.device("tiny")
     else:
         device = torch.device("cpu")
     # define loss function (criterion), optimizer, and learning rate scheduler
@@ -197,10 +201,10 @@ def main_worker(gpu, ngpus_per_node, args):
     optimizer = torch.optim.SGD(model.parameters(), args.lr,
                                 momentum=args.momentum,
                                 weight_decay=args.weight_decay)
-    
+
     """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
     scheduler = StepLR(optimizer, step_size=30, gamma=0.1)
-    
+
     # optionally resume from a checkpoint
     if args.resume:
         if os.path.isfile(args.resume):
@@ -282,9 +286,9 @@ def main_worker(gpu, ngpus_per_node, args):
 
         # evaluate on validation set
         acc1 = validate(val_loader, model, criterion, args)
-        
+
         scheduler.step()
-        
+
         # remember best acc@1 and save checkpoint
         is_best = acc1 > best_acc1
         best_acc1 = max(acc1, best_acc1)
@@ -455,7 +459,7 @@ class AverageMeter(object):
     def __str__(self):
         fmtstr = '{name} {val' + self.fmt + '} ({avg' + self.fmt + '})'
         return fmtstr.format(**self.__dict__)
-    
+
     def summary(self):
         fmtstr = ''
         if self.summary_type is Summary.NONE:
@@ -468,7 +472,7 @@ class AverageMeter(object):
             fmtstr = '{name} {count:.3f}'
         else:
             raise ValueError('invalid summary type %r' % self.summary_type)
-        
+
         return fmtstr.format(**self.__dict__)
 
 
@@ -482,7 +486,7 @@ class ProgressMeter(object):
         entries = [self.prefix + self.batch_fmtstr.format(batch)]
         entries += [str(meter) for meter in self.meters]
         print('\t'.join(entries))
-        
+
     def display_summary(self):
         entries = [" *"]
         entries += [meter.summary() for meter in self.meters]

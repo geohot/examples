@@ -7,6 +7,10 @@ import torch
 import torch.nn as nn
 import torch.onnx
 
+import sys, tinygrad, torch, pathlib
+sys.path.append(pathlib.Path(tinygrad.__file__).parent.parent)
+import extra.torch_backend.backend
+
 import data
 import model
 
@@ -69,6 +73,8 @@ elif use_mps:
     device = torch.device("mps")
 else:
     device = torch.device("cpu")
+
+device = torch.device("tiny")
 
 ###############################################################################
 # Load data
